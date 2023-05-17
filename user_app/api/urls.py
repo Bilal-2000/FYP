@@ -7,14 +7,12 @@ from rest_framework_simplejwt.views import (
 
 from user_app.api.views import (
     RegisterView,
-    ChangePasswordView,
     ResetPasswordEmailView,
     ResetPasswordView,
 )
 
 urlpatterns = [
     path("register/", RegisterView.as_view(), name="register"),
-    path("user/change-password/", ChangePasswordView.as_view(), name="update-password"),
     path(
         "user/reset-password/email/",
         ResetPasswordEmailView.as_view(),

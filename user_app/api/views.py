@@ -12,7 +12,6 @@ from django.core.mail import send_mail
 
 from user_app.api.serializers import (
     CustomUserSerializer,
-    ChangePasswordSerializer,
     password_validator_check,
 )
 from user_app.models import CustomUser, ResetToken
@@ -53,35 +52,6 @@ class RegisterView(APIView):
                 {"Error": "User already present Please Login"},
                 status.HTTP_400_BAD_REQUEST,
             )
-
-
-class ChangePasswordView(APIView):
-    permission_classes = [IsAuthenticated]
-
-    def get_object(self, queryset=None) -> object:
-        return self.request.user
-
-    def put(self, request):
-        """
-        Update the password of an authenticated user.
-        Args:
-            request (Request): The request object containing the user's old password and the new password.
-        Returns:
-            Response: A response object with a success message "Password changed"
-            if the password was changed successfully or an error message if the request is invalid.
-        """
-        user = self.get_object()
-        if not user.check_password(request.data["old_password"]):
-            raise ValidationError({"Error": "Incorrect Old password"})
-        # To trigger update function sending instance
-        serializer = ChangePasswordSerializer(user, data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response({"Success": "Password changed"}, status=status.HTTP_200_OK)
-        return Response(
-            {"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
-        )
-
 
 class ResetPasswordEmailView(APIView):
     @staticmethod

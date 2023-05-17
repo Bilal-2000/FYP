@@ -20,25 +20,6 @@ def password_validator_check(password):
         return password
 
 
-class ChangePasswordSerializer(serializers.Serializer):
-    old_password = serializers.CharField(max_length=124)
-    new_password = serializers.CharField(max_length=124)
-
-    class Meta:
-        model = CustomUser
-
-    @staticmethod
-    def validate_new_password(value: str) -> str:
-        # Passing password to Validation function
-        return password_validator_check(value)
-
-    def update(self, instance, validated_data) -> object:
-        # set_password hash the string using algorithm
-        instance.set_password(validated_data["new_password"])
-        instance.save()
-        return instance
-
-
 class CustomUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
