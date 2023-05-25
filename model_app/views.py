@@ -27,22 +27,27 @@ class PredictView(APIView):
             pic = cv2.resize(pic, (IMG_BREDTH, IMG_HEIGHT))
             pic = np.expand_dims(pic, axis=0)
             classes = model.predict(pic)
+            confidence = "{0:.0f}%".format(classes.max() * 100)
             output_string = f"Organic" if classes[0][0] > classes[0][1] else "Recyclable"
             temp = request.data
             temp['prediction_result'] = output_string
             serializer = PredictionsModelSerializer(data=temp, context={"user": self.request.user})
             if serializer.is_valid():
                 serializer.save()
-                return Response({f"The waste picture you provided is {output_string} and can be dumped"}
+                return Response({"Prediction": f"The waste picture you provided is {output_string} and can be dumped",
+                                 "Confidence": f'{confidence}'}
                                 if output_string == "Organic"
-                                else {f"The waste picture you provided is {output_string} and should be recycled"},
+                                else {
+                    "Prediction": f"The waste picture you provided is {output_string} and should be recycled",
+                    "Confidence": f'{confidence}'},
                                 status=status.HTTP_200_OK)
             else:
-                return Response(status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                return Response(status=status.HTTP_400_BAD_REQUEST,
                                 data={"error": serializer.errors})
 
         except Exception as e:
-            return Response({'Error': str(e)})
+            return Response({"Error": "Invalid Image provided"}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class HistoryView(APIView):
