@@ -27,19 +27,8 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def validate_password(value: str) -> str:
-        # Regular expression for strong password
-        password_validator_check(value)
         # Function to hash password
         return make_password(value)
-
-    @staticmethod
-    def validate_username(value: str) -> str:
-        # Len validator
-        if len(value) < 4:
-            raise serializers.ValidationError(
-                {"Error": "Username must contains minimum 4 words"}
-            )
-        return value
 
     def create(self, validated_data) -> object:
         return CustomUser.objects.create(**validated_data)

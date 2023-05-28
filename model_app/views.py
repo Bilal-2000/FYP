@@ -22,7 +22,11 @@ class PredictView(APIView):
     def post(self, request):
         try:
             img = copy.deepcopy(request.data["image"])
-            pic = plt.imread(img.file, format=img.name.split('.')[1])
+            pic_format = img.name.split('.')[1].lower()
+            if pic_format not in ["jpeg", "jpg", "png"]:
+                return Response({"Error": "Only JPEG, JPG and PNG files are supported."},
+                                status=status.HTTP_400_BAD_REQUEST)
+            pic = plt.imread(img.file, format=pic_format)
             model = ModelConfig.predictor
             pic = cv2.resize(pic, (IMG_BREDTH, IMG_HEIGHT))
             pic = np.expand_dims(pic, axis=0)
@@ -43,11 +47,11 @@ class PredictView(APIView):
                                 status=status.HTTP_200_OK)
             else:
                 return Response(status=status.HTTP_400_BAD_REQUEST,
-                                data={"error": serializer.errors})
+                                data={"Error": serializer.errors})
 
         except Exception as e:
-            return Response({"Error": "Invalid Image provided"}, status=status.HTTP_400_BAD_REQUEST)
-
+            return Response({"Error": "Sorry the Model is unable to predict this picture"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class HistoryView(APIView):

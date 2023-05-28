@@ -1,5 +1,5 @@
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
+import re
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.exceptions import ValidationError
@@ -31,11 +31,16 @@ class RegisterView(APIView):
             CustomUser.objects.get(email=request.data["email"])
 
         except CustomUser.DoesNotExist:
-            serializer = CustomUserSerializer(data=request.data)
             # White space validator
-            if " " in request.data["username"]:
-                raise ValidationError({"Error": "Username cannot have whitespaces"})
+            if " " in request.data["username"] or len(request.data["username"]) < 4:
+                raise ValidationError({"Error": "Username cannot have whitespaces and should be minimum 4 characters"})
 
+            email_regex = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+            if not re.fullmatch(email_regex, request.data.get("email")):
+                raise ValidationError({"Error": "Invalid Email format"})
+
+            password = password_validator_check(request.data["password"])
+            serializer = CustomUserSerializer(data=request.data)
             if serializer.is_valid():
                 serializer.save()
                 return Response(
@@ -44,7 +49,7 @@ class RegisterView(APIView):
 
             else:
                 return Response(
-                    {"Error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+                    {"Error": serializer.errors}, status=status.HTTP_406_NOT_ACCEPTABLE
                 )
 
         else:
@@ -52,6 +57,7 @@ class RegisterView(APIView):
                 {"Error": "User already present Please Login"},
                 status.HTTP_400_BAD_REQUEST,
             )
+
 
 class ResetPasswordEmailView(APIView):
     @staticmethod
