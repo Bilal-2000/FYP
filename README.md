@@ -1,6 +1,7 @@
 # FYP Backend
 
 ### A deep learning model able to classify waste into two categories : Organic and Recyclable. Integrated with Django Backend
+#### Model File Acc80.h5 is provided in fyp/static directory
 
 Steps for setting project locally
 
